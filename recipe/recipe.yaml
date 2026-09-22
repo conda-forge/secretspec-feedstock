@@ -16,6 +16,11 @@ build:
       CARGO_PROFILE_RELEASE_STRIP: symbols
       CARGO_PROFILE_RELEASE_LTO: thin
     content:
+      # aws-lc-sys only auto-selects clang-cl for aarch64-pc-windows-msvc when CC is unset, but
+      # conda-forge sets CC=cl.exe, and cl.exe cannot assemble the aarch64 .S sources
+      - if: target_platform == 'win-arm64'
+        then:
+          - set "AWS_LC_SYS_CC=clang-cl"
       - if: unix
         then:
           - cargo auditable install --locked --no-track --bins --root ${{ PREFIX }} --path secretspec
@@ -40,8 +45,7 @@ requirements:
     - if: win
       then:
         - nasm
-    # aws-lc-sys switches CC to clang-cl for aarch64-pc-windows-msvc; without it cl.exe
-    # silently ignores the aarch64 .S sources and the static lib fails to link
+    # provides clang-cl, which aws-lc-sys needs to assemble the aarch64 .S sources
     - if: target_platform == 'win-arm64'
       then:
         - clang
