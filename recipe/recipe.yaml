@@ -40,6 +40,11 @@ requirements:
     - if: win
       then:
         - nasm
+    # aws-lc-sys switches CC to clang-cl for aarch64-pc-windows-msvc; without it cl.exe
+    # silently ignores the aarch64 .S sources and the static lib fails to link
+    - if: target_platform == 'win-arm64'
+      then:
+        - clang
 
 tests:
   - script:
